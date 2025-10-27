@@ -1,0 +1,136 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import urllib.request
+import os
+from datetime import datetime
+
+url = "https://upload.wikimedia.org/wikipedia/commons/7/7d/Dog_face.png"
+req = urllib.request.Request(
+    url,
+    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+)
+resp = urllib.request.urlopen(req)
+image_data = np.asarray(bytearray(resp.read()), dtype=np.uint8)
+image = cv2.imdecode(image_data, cv2.IMREAD_GRAYSCALE)
+
+# Ask user for transformation parameters
+angle = float(input("Enter rotation angle (degrees): "))
+scale = float(input("Enter scaling factor (e.g., 1.2 for zoom-in, 0.8 for zoom-out): "))
+tx = float(input("Enter translation in X direction (pixels): "))
+ty = float(input("Enter translation in Y direction (pixels): "))
+shear_x = float(input("Enter shearing factor in X direction: "))
+shear_y = float(input("Enter shearing factor in Y direction: "))
+
+# Manual transformation matrices
+rows, cols = image.shape
+center_x, center_y = cols / 2, rows / 2
+
+# Translation Matrix
+T = np.array([[1, 0, tx],
+              [0, 1, ty]], dtype=np.float32)
+
+# Rotation Matrix
+theta = np.deg2rad(angle)
+R = np.array([[np.cos(theta), -np.sin(theta), 0],
+              [np.sin(theta),  np.cos(theta), 0]], dtype=np.float32)
+
+# Scaling Matrix
+S = np.array([[scale, 0, 0],
+              [0, scale, 0]], dtype=np.float32)
+
+# Reflection Matrix (across Y-axis)
+Ref = np.array([[-1, 0, cols],
+                [0, 1, 0]], dtype=np.float32)
+
+# Shearing Matrix
+Sh = np.array([[0.1, shear_x, 0],
+               [shear_y, 0.1, 0]], dtype=np.float32)
+
+# Manual transformation via matrix multiplication
+def apply_manual_transform(image, M):
+    rows, cols = image.shape
+    transformed = cv2.warpAffine(image, M, (cols, rows))
+    return transformed
+
+manual_translation = apply_manual_transform(image, T)
+manual_rotation = apply_manual_transform(image, R)
+manual_scaling = apply_manual_transform(image, S)
+manual_reflection = apply_manual_transform(image, Ref)
+manual_shearing = apply_manual_transform(image, Sh)
+
+# Using OpenCV built-in functions for comparison
+# Translation
+M_trans = np.float32([[1, 0, tx], [0, 1, ty]])
+opencv_translation = cv2.warpAffine(image, M_trans, (cols, rows))
+
+# Rotation 
+M_rot = cv2.getRotationMatrix2D((center_x, center_y), angle, scale)
+opencv_rotation = cv2.warpAffine(image, M_rot, (cols, rows))
+
+# Scaling
+opencv_scaling = cv2.resize(image, None, fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
+
+# Reflection (flip)
+opencv_reflection = cv2.flip(image, 1)  
+
+# Shearing (custom)
+M_shear = np.float32([[1, shear_x, 0], [shear_y, 1, 0]])
+opencv_shearing = cv2.warpAffine(image, M_shear, (cols, rows))
+
+# Create output folder dynamically
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+folder_name = f"Transformations_angle{angle}_scale{scale}_tx{tx}_ty{ty}"
+os.makedirs(folder_name, exist_ok=True)
+
+# Save all outputs
+cv2.imwrite(os.path.join(folder_name, "original_image.png"), image)
+
+transforms = {
+    "manual_translation": manual_translation,
+    "manual_rotation": manual_rotation,
+    "manual_scaling": manual_scaling,
+    "manual_reflection": manual_reflection,
+    "manual_shearing": manual_shearing,
+    "opencv_translation": opencv_translation,
+    "opencv_rotation": opencv_rotation,
+    "opencv_scaling": opencv_scaling,
+    "opencv_reflection": opencv_reflection,
+    "opencv_shearing": opencv_shearing
+}
+
+for name, img in transforms.items():
+    cv2.imwrite(os.path.join(folder_name, f"{name}.png"), img)
+
+# Display some comparisons
+plt.figure(figsize=(15, 8))
+
+plt.subplot(2, 3, 1)
+plt.title("Original Image")
+plt.imshow(image, cmap='gray')
+plt.axis('off')
+
+plt.subplot(2, 3, 2)
+plt.title("Manual Rotation")
+plt.imshow(manual_rotation, cmap='gray')
+plt.axis('off')
+
+plt.subplot(2, 3, 3)
+plt.title("OpenCV Rotation")
+plt.imshow(opencv_rotation, cmap='gray')
+plt.axis('off')
+
+plt.subplot(2, 3, 4)
+plt.title("Manual Shearing")
+plt.imshow(manual_shearing, cmap='gray')
+plt.axis('off')
+
+plt.subplot(2, 3, 5)
+plt.title("OpenCV Shearing")
+plt.imshow(opencv_shearing, cmap='gray')
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+print(f"\n All transformed images saved in folder: '{folder_name}'")
