@@ -1,0 +1,19 @@
+# API keys and secrets
+config/api.js
+config/*.js
+
+# Node modules (if you ever add node)
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.vscode/
+.idea/
