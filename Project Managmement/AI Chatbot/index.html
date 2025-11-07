@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Chatbot</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h2>AI Assistant</h2>
+      <p>Powered by LLM</p>
+      <p>Reengineered by Mahir, Rafid & Mehedi</p>
+    </div>
+    <div class="messages" id="messages">
+      <div class="message ai">
+        Hello! I'm your AI assistant. Ask me anything!
+      </div>
+    </div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Type a message..." autocomplete="off" />
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+
+  <script src="config/api.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
