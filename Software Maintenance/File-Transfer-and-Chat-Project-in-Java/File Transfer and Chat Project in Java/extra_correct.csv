@@ -1,0 +1,14 @@
+class,cl_comf,cl_stat
+chat,0.074866,96
+chatform,0.043478,185
+chatform1,0.051852,61
+clientform,0.121212,20
+filter,0.010753,56
+form1,0.055556,37
+ftpser1,0.023166,128
+killall,0.112676,36
+menu1,0.010417,73
+sendall,0.103774,66
+
+TOTAL_COMF,,0.607749
+TOTAL_STAT,,758
